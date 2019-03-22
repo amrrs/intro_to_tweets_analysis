@@ -45,8 +45,6 @@ s <- udpipe_annotate(udmodel_english, hasanIN$text_nohashtag)
 
 x <- data.frame(s)
 
-
-
 stats <- txt_freq(x$upos)
 stats$key <- factor(stats$key, levels = rev(stats$key))
 barchart(key ~ freq, data = stats, col = "yellow", 
@@ -77,9 +75,33 @@ barchart(key ~ freq, data = head(stats, 20), col = "gold",
 ## Using RAKE
 stats <- keywords_rake(x = x, term = "lemma", group = "doc_id", 
                        relevant = x$upos %in% c("NOUN", "ADJ"))
-stats$key <- factor(stats$keyword, levels = rev(stats$keyword))
-barchart(key ~ rake, data = head(subset(stats, freq > 3), 20), col = "red", 
-         main = "Keywords identified by RAKE", 
-         xlab = "Rake")
 
 
+stats %>% 
+  filter(freq >= 5) %>% 
+  arrange(desc(rake)) %>% 
+  slice(1:30) %>% 
+  mutate(keyword = fct_reorder(keyword,rake)) %>% 
+  ggplot() + geom_bar(aes(keyword,rake), stat = "identity", fill = "red") +
+  scale_y_log10() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Top 30 Topics about Patriot Act's Indian Election Tweets",
+       subtitle = "Comdey Show by Hasan Mihnaj & Netflix",
+       caption = "Data Source: Tweets mentioning `@hasanminhaj india`",
+       y = "Log of RAKE Score (higher - better)",
+       x = "Hashtags")
+
+
+## Word cloud - required????
+
+stats %>% 
+  filter(freq >= 5) %>% 
+  arrange(desc(rake)) %>% 
+  slice(1:30) %>% 
+  mutate(keyword = fct_reorder(keyword,rake)) -> stats_df
+  wordcloud::wordcloud(stats_df$keyword,stats_df$rake)
+  
+## Text Plot
+  
+wordcloud::textplot(log1p(stats_df$rake),log1p(stats_df$freq),stats_df$keyword,cex = 0.7)
