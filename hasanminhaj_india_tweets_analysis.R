@@ -28,7 +28,8 @@ hasanIN %>%
   slice(1:20) %>% 
   ggplot() + geom_bar(aes(hashtags,n), stat = "identity", fill = "#000080") +
   coord_flip() +
-  theme_minimal() +
+  ggplot2::theme_minimal()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   labs(title = "Top 20 Hashtags about Patriot Act's Indian Election Episode",
        subtitle = "Comdey Show by Hasan Mihnaj & Netflix",
        caption = "Data Source: Tweets mentioning `@hasanminhaj india`",
@@ -44,6 +45,7 @@ hasanIN %>%
 
 # based on this SO answer: https://stackoverflow.com/a/39632532
 # Indian Tricolor Gradient Background
+# Src: https://www.schemecolor.com/indian-flag-colors.php
 
 indflag <- c("#FF9933", "#FFFFFF", "#138808")
 g <- rasterGrob(indflag, width = unit(1, "npc"), height = unit(1, "npc"), interpolate = TRUE)
@@ -113,7 +115,6 @@ stats %>%
        y = "Log of RAKE Score (higher - better)",
        x = "Hashtags") -> topics
 
-# Example with PNG (for fun, the OP's avatar - I love the raccoon)
 ggdraw() +
   draw_image("https://st1.latestly.com/wp-content/uploads/2019/03/03-8-784x441.jpg",
              x = 0.25, y = -0.25,
