@@ -8,7 +8,7 @@ library(ggimage)
 library(ggplot2)
 library(grid)
 library(ggthemes)
-
+library(animation)
 
 hasanIN <- read_twitter_csv("hasanminhaj_india_noRT.csv", unflatten = TRUE) 
 
