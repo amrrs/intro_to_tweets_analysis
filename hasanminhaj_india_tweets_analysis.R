@@ -12,6 +12,7 @@ library(animation)
 
 hasanIN <- read_twitter_csv("hasanminhaj_india_noRT.csv", unflatten = TRUE) 
 
+#A glimpse of the data
 glimpse(hasanIN)
 
 # Top Twitter Accounts
