@@ -30,7 +30,11 @@ hasanIN %>%
   ggplot() + geom_bar(aes(hashtags,n), stat = "identity", fill = "#000080") +
   coord_flip() +
   ggplot2::theme_minimal()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.y = element_text(face = c('bold'),
+                                   size = 14,
+                                   color = "#000080")) +
   labs(title = "Top 20 Hashtags about Patriot Act's Indian Election Episode",
        subtitle = "Comdey Show by Hasan Mihnaj & Netflix",
        caption = "Data Source: Tweets mentioning `@hasanminhaj india`",
