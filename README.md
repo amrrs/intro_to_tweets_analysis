@@ -6,5 +6,7 @@ The goal of hasan_india_tweets_analysis is to understand the tweets made about t
 
 ![top_20](top20_hashtags_new.png)
 ![top_30](top30_topics.png)
-![textplot](textplot.png)
+![textplot](textplot_new.png)
 
+
+### [Presentation PDF](presentation.pdf)

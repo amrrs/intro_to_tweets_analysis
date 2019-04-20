@@ -8,7 +8,7 @@ library(ggimage)
 library(ggplot2)
 library(grid)
 library(ggthemes)
-library(animation)
+
 
 hasanIN <- read_twitter_csv("hasanminhaj_india_noRT.csv", unflatten = TRUE) 
 
@@ -16,8 +16,17 @@ hasanIN <- read_twitter_csv("hasanminhaj_india_noRT.csv", unflatten = TRUE)
 glimpse(hasanIN)
 
 # Top Twitter Accounts
-hasanIN %>% count(screen_name) %>% arrange(desc(n)) %>% slice(1:10) %>% 
+hasanIN %>% 
+  count(screen_name) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:10) %>% 
   knitr::kable()
+
+
+# Tweet Client Source
+hasanIN %>% 
+  count(source) %>% 
+  arrange(desc(n)) 
 
 # Top 20 Hashtags
 hasanIN %>% 
@@ -45,7 +54,6 @@ hasanIN %>%
 
 #img <- "https://st1.latestly.com/wp-content/uploads/2019/03/03-8-784x441.jpg"
 #img_new <- image_read(img)
-
 
 
 # based on this SO answer: https://stackoverflow.com/a/39632532

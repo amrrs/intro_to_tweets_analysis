@@ -1,7 +1,6 @@
 library(rtweet)
 #library(tidyverse)
 
-
 consumer_key ="xxxx"
 
 consumer_secret ="xxxx"

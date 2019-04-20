@@ -1,0 +1,384 @@
+---
+title: "Introduction to Tweets Analysis"
+subtitle: "Guide with Example"
+author: "AbdulMajedRaja RS"
+date: "20th April 2019"
+output:
+  xaringan::moon_reader:
+    chakra: libs/remark-latest.min.js 
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+ 
+# About Me
+
+- Studied at **Government College of Technology, Coimbatore**
+
+- [Bengaluru R user group](https://www.meetup.com/BengaluRu-use-R-gRoup/) **Organizer**
+
+- R Packages **Developer** (`coinmarketcapr`, `itunesr`)
+
+
+---
+class: inverse, center, middle
+ 
+# What's in Twitter for Brands?
+
+---
+class: inverse, center, middle
+
+# When was the last time you 
+# filled a survey 
+#`happily` 
+# with 
+#`full attention` & `truth`?
+
+---
+
+# What's in Twitter for Brands?
+
+- People actually *rant* on Twitter
+
+- **Real** Voice of Customer
+
+- Decent amount of Data 
+
+---
+
+class: inverse, center, middle
+
+# One more **BIG** reason?
+
+--
+
+# **FREE!!!!**
+
+---
+
+# Workflow
+
+**Data Collection** 
+
+* `rtweet`
+
+**Data Processing** 
+
+* `tidyverse`
+
+**NLP (Natural Language Processing) & Text Analytics** 
+
+* `udpipe`
+* `tidytext`
+
+**Data Visualization** 
+
+* `ggplot2` (also, part of `tidyverse`)
+
+---
+# The Show
+
+<figure>
+
+<img src='poster.jpg' width="80%" />
+
+</figure>
+
+
+---
+
+# rtweet
+
+```{r}
+citation('rtweet')
+```
+
+---
+
+# Tweet Collection
+
+```{r eval=FALSE, tidy=TRUE}
+
+library(rtweet)
+
+consumer_key ="xxxx"
+consumer_secret ="xxxx"
+access_token="xxxx"
+access_secret="xxxx"
+
+
+twitter_token = create_token(consumer_key = consumer_key,
+                             consumer_secret = consumer_secret,
+                             access_token = access_token,
+                             access_secret = access_secret)
+
+* keyword1 <- search_tweets('@hasanminhaj india', 
+                          n = 5000, 
+                          token = twitter_token, 
+                          include_rts = FALSE)
+
+write_as_csv(keyword1,
+             "~//Documents//R Codes//hasanminhaj_india_noRT.csv")
+```
+ 
+
+---
+
+class: inverse
+
+# Disclaimer:
+
+- This is a very **naive** Analysis
+
+- **Didn't perform** proper Text Cleaning & Preprocessing, which are very essential
+
+- Objective is to help you get started with **Twitter Analysis**
+
+
+---
+
+# Loading libraries
+
+
+```{r message=FALSE,warning=FALSE}
+library(tidyverse)
+library(rtweet)
+library(lattice)
+library(udpipe)
+library(magick)
+library(cowplot)
+library(ggimage)
+library(ggplot2)
+library(grid)
+library(ggthemes)
+```
+
+
+---
+
+# Data input
+
+```{r}
+hasanIN <- read_twitter_csv("hasanminhaj_india_noRT.csv", 
+                            unflatten = TRUE) 
+
+```
+
+---
+
+```{r tidy=TRUE}
+#A glimpse of the data
+colnames(hasanIN)
+```
+
+---
+
+```{r tidy=TRUE}
+#A glimpse of the data
+glimpse(hasanIN)
+```
+
+---
+
+# Top Twitter Accounts
+
+```{r}
+hasanIN %>% 
+  count(screen_name) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:10) 
+
+```
+
+---
+
+# Tweet Client Source
+
+```{r}
+# Tweet Client Source
+hasanIN %>% 
+  count(source) %>% 
+  arrange(desc(n)) 
+
+```
+
+
+---
+
+# Top Hashtags
+
+```{r}
+# Top 20 Hashtags
+hasanIN %>% 
+  unnest(hashtags) %>% 
+  count(hashtags = tolower(hashtags)) %>% 
+  arrange(desc(n)) %>% 
+  mutate(hashtags = fct_reorder(hashtags,-n, .desc = TRUE)) %>% 
+  drop_na() %>% 
+  slice(1:20) %>% 
+  ggplot() + geom_bar(aes(hashtags,n), stat = "identity", fill = "#000080") +
+  coord_flip() +
+  ggplot2::theme_minimal()+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.y = element_text(face = c('bold'),
+                                   size = 14,
+                                   color = "#000080")) +
+  labs(title = "Top 20 Hashtags about Patriot Act's Indian Election Episode",
+       subtitle = "Comdey Show by Hasan Mihnaj & Netflix",
+       caption = "Data Source: Tweets mentioning `@hasanminhaj india`",
+       y = "Count of Tweets",
+       x = "Hashtags") -> top20_plot
+```
+
+---
+
+## The Graphics - That doesn't look interesting
+```{r}
+top20_plot
+```
+
+---
+## Themed Graphics 
+```{r eval=FALSE}
+# based on this SO answer: https://stackoverflow.com/a/39632532
+# Indian Tricolor Gradient Background
+# Src: https://www.schemecolor.com/indian-flag-colors.php
+
+indflag <- c("#FF9933", "#FFFFFF", "#138808")
+g <- rasterGrob(indflag, width = unit(1, "npc"), height = unit(1, "npc"), interpolate = TRUE)
+grid.newpage()
+grid.draw(g)
+print(top20_plot, newpage = FALSE)
+
+```
+
+---
+
+## Themed Graphics 
+
+<figure>
+
+<img src='top20_hashtags_new.png' width="100%" />
+
+</figure>
+
+
+---
+class: inverse, center, middle
+ 
+# Topic Extraction
+
+---
+
+# Bit of cleaning
+
+```{r}
+# Cleaning
+
+#based on: https://stackoverflow.com/questions/51947268/remove-hashtags-from-beginning-and-end-of-tweets-in-r
+
+hasanIN$text_nohashtag <- stringi::stri_replace_all_regex(hasanIN$text,"(?:\\s*#\\w+)+\\s*","")
+
+
+```
+---
+
+# NLP in Action
+
+### Language Model
+```{r eval=FALSE}
+#model <- udpipe_download_model(language = "english")
+udmodel_english <- udpipe_load_model(file = 'english-ewt-ud-2.3-181115.udpipe')
+
+```
+### Annotation & Transformation
+
+```{r eval=FALSE}
+
+s <- udpipe_annotate(udmodel_english, hasanIN$text_nohashtag)
+
+x <- data.frame(s)
+
+```
+
+---
+### Topic (Keyword) Extraction
+
+```{r eval=FALSE}
+## Using RAKE
+stats <- keywords_rake(x = x, term = "lemma", group = "doc_id", 
+                       relevant = x$upos %in% c("NOUN", "ADJ"))
+
+
+```
+ 
+---
+### Themed Graphics
+
+```{r eval=FALSE}
+
+stats %>% 
+  filter(freq >= 5) %>% 
+  arrange(desc(rake)) %>% 
+  slice(1:30) %>% 
+  mutate(keyword = fct_reorder(keyword,rake)) %>% 
+  ggplot() + geom_bar(aes(keyword,rake), stat = "identity", fill = "red") +
+  scale_y_log10() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Top 30 Topics about Patriot Act's Indian Election Tweets",
+       subtitle = "Comdey Show by Hasan Mihnaj & Netflix",
+       caption = "Data Source: Tweets mentioning `@hasanminhaj india`",
+       y = "Log of RAKE Score (higher - better)",
+       x = "Hashtags") -> topics
+
+ggdraw() +
+  draw_image("https://st1.latestly.com/wp-content/uploads/2019/03/03-8-784x441.jpg",
+             x = 0.25, y = -0.25,
+             scale = 0.4) +
+  draw_plot(topics)
+
+```
+
+---
+
+## Themed Graphics 
+
+<figure>
+
+<img src='top30_topics.png' width="70%" />
+
+</figure>
+
+---
+
+## You can do much more!
+
+<figure>
+
+<img src='textplot_new.png' width="80%" />
+
+</figure>
+
+---
+class: center, middle
+
+# Thanks!
+
+Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
+
+The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
+
+---
+
+class: inverse, center, middle
+
+# THE END 
+

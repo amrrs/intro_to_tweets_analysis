@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Introduction to Tweets Analysis</title>
+    <meta charset="utf-8">
+    <meta name="author" content="AbdulMajedRaja RS" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Introduction to Tweets Analysis
+## Guide with Example
+### AbdulMajedRaja RS
+### 20th April 2019
+
+---
+
+
+
+ 
+# About Me
+
+- Studied at **Government College of Technology, Coimbatore**
+
+- [Bengaluru R user group](https://www.meetup.com/BengaluRu-use-R-gRoup/) **Organizer**
+
+- R Packages **Developer** (`coinmarketcapr`, `itunesr`)
+
+- **Blogger** @ TowardsDataScience, Datascience+
+
+---
+class: inverse, center, middle
+ 
+# What's in Twitter for Brands?
+
+---
+class: inverse, center, middle
+
+# When was the last time you 
+# filled a survey 
+#`happily` 
+# with 
+#`full attention` &amp; `truth`?
+
+---
+
+# What's in Twitter for Brands?
+
+- People actually *rant* on Twitter
+
+- **Real** Voice of Customer
+
+- Decent amount of Data 
+
+---
+
+class: inverse, center, middle
+
+# One more **BIG** reason?
+
+--
+
+# **FREE!!!!**
+
+---
+
+# Workflow
+
+**Data Collection** 
+
+* `rtweet`
+
+**Data Processing** 
+
+* `tidyverse`
+
+**NLP (Natural Language Processing) &amp; Text Analytics** 
+
+* `udpipe`
+* `tidytext`
+
+**Data Visualization** 
+
+* `ggplot2` (also, part of `tidyverse`)
+
+---
+# The Show
+
+&lt;figure&gt;
+
+&lt;img src='poster.jpg' width="80%" /&gt;
+
+&lt;/figure&gt;
+
+
+---
+
+# rtweet
+
+
+```r
+citation('rtweet')
+```
+
+```
+## 
+## To cite rtweet use:
+## 
+##   Kearney, M. W. (2018). rtweet: Collecting Twitter Data. R
+##   package version 0.6.7 Retrieved from
+##   https://cran.r-project.org/package=rtweet
+## 
+## A BibTeX entry for LaTeX users is
+## 
+##   @Manual{rtweet-package,
+##     title = {rtweet: Collecting Twitter Data},
+##     author = {Michael W. Kearney},
+##     year = {2018},
+##     note = {R package version 0.6.7},
+##     url = {https://cran.r-project.org/package=rtweet},
+##   }
+```
+
+---
+
+# Tweet Collection
+
+
+```r
+library(rtweet)
+
+consumer_key ="xxxx"
+consumer_secret ="xxxx"
+access_token="xxxx"
+access_secret="xxxx"
+
+
+twitter_token = create_token(consumer_key = consumer_key,
+                             consumer_secret = consumer_secret,
+                             access_token = access_token,
+                             access_secret = access_secret)
+
+* keyword1 &lt;- search_tweets('@hasanminhaj india', 
+                          n = 5000, 
+                          token = twitter_token, 
+                          include_rts = FALSE)
+
+write_as_csv(keyword1,
+             "~//Documents//R Codes//hasanminhaj_india_noRT.csv")
+```
+ 
+
+---
+
+class: inverse
+
+# Disclaimer:
+
+- This is a very **naive** Analysis
+
+- **Didn't perform** proper Text Cleaning &amp; Preprocessing, which are very essential
+
+- Objective is to help you get started with **Twitter Analysis**
+
+
+---
+
+# Loading libraries
+
+
+
+```r
+library(tidyverse)
+library(rtweet)
+library(lattice)
+library(udpipe)
+library(magick)
+library(cowplot)
+library(ggimage)
+library(ggplot2)
+library(grid)
+library(ggthemes)
+```
+
+
+---
+
+# Data input
+
+
+```r
+hasanIN &lt;- read_twitter_csv("hasanminhaj_india_noRT.csv", 
+                            unflatten = TRUE) 
+```
+
+---
+
+
+```r
+# A glimpse of the data
+colnames(hasanIN)
+```
+
+```
+##  [1] "user_id"                 "status_id"              
+##  [3] "created_at"              "screen_name"            
+##  [5] "text"                    "source"                 
+##  [7] "display_text_width"      "reply_to_status_id"     
+##  [9] "reply_to_user_id"        "reply_to_screen_name"   
+## [11] "is_quote"                "is_retweet"             
+## [13] "favorite_count"          "retweet_count"          
+## [15] "hashtags"                "symbols"                
+## [17] "urls_url"                "urls_t.co"              
+## [19] "urls_expanded_url"       "media_url"              
+## [21] "media_t.co"              "media_expanded_url"     
+## [23] "media_type"              "ext_media_url"          
+## [25] "ext_media_t.co"          "ext_media_expanded_url" 
+## [27] "ext_media_type"          "mentions_user_id"       
+## [29] "mentions_screen_name"    "lang"                   
+## [31] "quoted_status_id"        "quoted_text"            
+## [33] "quoted_created_at"       "quoted_source"          
+## [35] "quoted_favorite_count"   "quoted_retweet_count"   
+## [37] "quoted_user_id"          "quoted_screen_name"     
+## [39] "quoted_name"             "quoted_followers_count" 
+## [41] "quoted_friends_count"    "quoted_statuses_count"  
+## [43] "quoted_location"         "quoted_description"     
+## [45] "quoted_verified"         "retweet_status_id"      
+## [47] "retweet_text"            "retweet_created_at"     
+## [49] "retweet_source"          "retweet_favorite_count" 
+## [51] "retweet_retweet_count"   "retweet_user_id"        
+## [53] "retweet_screen_name"     "retweet_name"           
+## [55] "retweet_followers_count" "retweet_friends_count"  
+## [57] "retweet_statuses_count"  "retweet_location"       
+## [59] "retweet_description"     "retweet_verified"       
+## [61] "place_url"               "place_name"             
+## [63] "place_full_name"         "place_type"             
+## [65] "country"                 "country_code"           
+## [67] "geo_coords"              "coords_coords"          
+## [69] "bbox_coords"             "status_url"             
+## [71] "name"                    "location"               
+## [73] "description"             "url"                    
+## [75] "protected"               "followers_count"        
+## [77] "friends_count"           "listed_count"           
+## [79] "statuses_count"          "favourites_count"       
+## [81] "account_created_at"      "verified"               
+## [83] "profile_url"             "profile_expanded_url"   
+## [85] "account_lang"            "profile_banner_url"     
+## [87] "profile_background_url"  "profile_image_url"
+```
+
+---
+
+
+```r
+# A glimpse of the data
+glimpse(hasanIN)
+```
+
+```
+## Observations: 1,803
+## Variables: 88
+## $ user_id                 &lt;chr&gt; "914927933378236416", "99030509067730534…
+## $ status_id               &lt;chr&gt; "1108791295131205633", "1108790719131471…
+## $ created_at              &lt;chr&gt; "2019-03-21 18:03:39", "2019-03-21 18:01…
+## $ screen_name             &lt;chr&gt; "BurntOutCase", "m_complicated_", "aditr…
+## $ text                    &lt;chr&gt; "@in_my_sanctuary @PlatinumJab @hasanmin…
+## $ source                  &lt;chr&gt; "Twitter for Android", "Twitter for Andr…
+## $ display_text_width      &lt;int&gt; 256, 195, 148, 234, 134, 262, 186, 280, …
+## $ reply_to_status_id      &lt;chr&gt; "1108789333052608513", "1108789349322248…
+## $ reply_to_user_id        &lt;chr&gt; "914927933378236416", "1950140599", NA, …
+## $ reply_to_screen_name    &lt;chr&gt; "BurntOutCase", "ItsGazab", NA, "Netflix…
+## $ is_quote                &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+## $ is_retweet              &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+## $ favorite_count          &lt;int&gt; 0, 1, 3, 0, 0, 5, 0, 0, 0, 0, 0, 0, 10, …
+## $ retweet_count           &lt;int&gt; 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 7, 6…
+## $ hashtags                &lt;list&gt; [NA, NA, NA, NA, NA, "PatriotAct", NA, …
+## $ symbols                 &lt;list&gt; [NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ urls_url                &lt;list&gt; [NA, NA, NA, NA, NA, NA, NA, "twitter.c…
+## $ urls_t.co               &lt;list&gt; [NA, NA, NA, NA, NA, NA, NA, "https://t…
+## $ urls_expanded_url       &lt;list&gt; [NA, NA, NA, NA, NA, NA, NA, "https://t…
+## $ media_url               &lt;list&gt; [NA, NA, "http://pbs.twimg.com/media/D2…
+## $ media_t.co              &lt;list&gt; [NA, NA, "https://t.co/Ef7BtDBUWq", NA,…
+## $ media_expanded_url      &lt;list&gt; [NA, NA, "https://twitter.com/aditrao/s…
+## $ media_type              &lt;list&gt; [NA, NA, "photo", NA, NA, NA, NA, NA, N…
+## $ ext_media_url           &lt;list&gt; [NA, NA, "http://pbs.twimg.com/media/D2…
+## $ ext_media_t.co          &lt;list&gt; [NA, NA, "https://t.co/Ef7BtDBUWq", NA,…
+## $ ext_media_expanded_url  &lt;list&gt; [NA, NA, "https://twitter.com/aditrao/s…
+## $ ext_media_type          &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ mentions_user_id        &lt;list&gt; [&lt;"985282285468553216", "2267655606", "…
+## $ mentions_screen_name    &lt;list&gt; [&lt;"in_my_sanctuary", "PlatinumJab", "ha…
+## $ lang                    &lt;chr&gt; "en", "en", "en", "en", "en", "en", "es"…
+## $ quoted_status_id        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "11072376997…
+## $ quoted_text             &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "I didn’t li…
+## $ quoted_created_at       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "2019-03-17 …
+## $ quoted_source           &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "Twitter for…
+## $ quoted_favorite_count   &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, 37736, NA, N…
+## $ quoted_retweet_count    &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, 8948, NA, NA…
+## $ quoted_user_id          &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "14652182", …
+## $ quoted_screen_name      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "hasanminhaj…
+## $ quoted_name             &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "Hasan Minha…
+## $ quoted_followers_count  &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, 405003, NA, …
+## $ quoted_friends_count    &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, 1014, NA, NA…
+## $ quoted_statuses_count   &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, 3428, NA, NA…
+## $ quoted_location         &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "New York", …
+## $ quoted_description      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, "@patriotact…
+## $ quoted_verified         &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, TRUE, NA, NA…
+## $ retweet_status_id       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_text            &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_created_at      &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_source          &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_favorite_count  &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_retweet_count   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_user_id         &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_screen_name     &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_name            &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_followers_count &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_friends_count   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_statuses_count  &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_location        &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_description     &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ retweet_verified        &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ place_url               &lt;chr&gt; NA, NA, "https://api.twitter.com/1.1/geo…
+## $ place_name              &lt;chr&gt; NA, NA, "Carleton University", NA, NA, N…
+## $ place_full_name         &lt;chr&gt; NA, NA, "Carleton University", NA, NA, N…
+## $ place_type              &lt;chr&gt; NA, NA, "poi", NA, NA, NA, NA, NA, NA, N…
+## $ country                 &lt;chr&gt; NA, NA, "Canada", NA, NA, NA, NA, NA, NA…
+## $ country_code            &lt;chr&gt; NA, NA, "CA", NA, NA, NA, NA, NA, NA, NA…
+## $ geo_coords              &lt;list&gt; [&lt;NA, NA&gt;, &lt;NA, NA&gt;, &lt;NA, NA&gt;, &lt;NA, NA&gt;…
+## $ coords_coords           &lt;list&gt; [&lt;NA, NA&gt;, &lt;NA, NA&gt;, &lt;NA, NA&gt;, &lt;NA, NA&gt;…
+## $ bbox_coords             &lt;list&gt; [&lt;NA, NA, NA, NA, NA, NA, NA, NA&gt;, &lt;NA,…
+## $ status_url              &lt;chr&gt; "https://twitter.com/BurntOutCase/status…
+## $ name                    &lt;chr&gt; "Burnt-Out Case", "RING ROAD \U0001f3ad"…
+## $ location                &lt;chr&gt; NA, "Twitter \U0001f601", "Ottawa, Ontar…
+## $ description             &lt;chr&gt; NA, "#just a human \n#food lover\n#love …
+## $ url                     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ protected               &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+## $ followers_count         &lt;int&gt; 135, 125, 2082, 85, 58, 58, 238, 105, 4,…
+## $ friends_count           &lt;int&gt; 1011, 58, 2181, 92, 308, 308, 1096, 40, …
+## $ listed_count            &lt;int&gt; 1, 0, 53, 1, 4, 4, 0, 1, 0, 0, 1, 0, 173…
+## $ statuses_count          &lt;int&gt; 11668, 4915, 10802, 196, 8228, 8228, 112…
+## $ favourites_count        &lt;int&gt; 21355, 3947, 3927, 45, 2572, 2572, 47706…
+## $ account_created_at      &lt;chr&gt; "2017-10-02 18:59:52", "2018-04-28 19:01…
+## $ verified                &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+## $ profile_url             &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ profile_expanded_url    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ account_lang            &lt;chr&gt; "en", "en", "en", "en", "en", "en", "es"…
+## $ profile_banner_url      &lt;chr&gt; "https://pbs.twimg.com/profile_banners/9…
+## $ profile_background_url  &lt;chr&gt; NA, NA, "http://abs.twimg.com/images/the…
+## $ profile_image_url       &lt;chr&gt; "http://pbs.twimg.com/profile_images/914…
+```
+
+---
+
+# Top Twitter Accounts
+
+
+```r
+hasanIN %&gt;% 
+  count(screen_name) %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  slice(1:10) 
+```
+
+```
+## # A tibble: 10 x 2
+##    screen_name         n
+##    &lt;chr&gt;           &lt;int&gt;
+##  1 IndiaAtWar         15
+##  2 ViratPhoenix       14
+##  3 PerzonalOpinion    12
+##  4 Sreevenkat13        9
+##  5 ABhadikar           7
+##  6 dankchikidang       7
+##  7 RollyKumari         7
+##  8 swarnim_adhyaay     7
+##  9 thanosisthehero     7
+## 10 vedant23440716      7
+```
+
+---
+
+# Tweet Client Source
+
+
+```r
+# Tweet Client Source
+hasanIN %&gt;% 
+  count(source) %&gt;% 
+  arrange(desc(n)) 
+```
+
+```
+## # A tibble: 11 x 2
+##    source                   n
+##    &lt;chr&gt;                &lt;int&gt;
+##  1 Twitter for Android    781
+##  2 Twitter for iPhone     534
+##  3 Twitter Web Client     244
+##  4 Twitter Web App        195
+##  5 Twitter for iPad        18
+##  6 Mobile Web (M2)         12
+##  7 TweetDeck                7
+##  8 Flamingo for Android     4
+##  9 Tweetbot for iΟS         4
+## 10 Buffer                   2
+## 11 Hootsuite Inc.           2
+```
+
+
+---
+
+# Top Hashtags
+
+
+```r
+# Top 20 Hashtags
+hasanIN %&gt;% 
+  unnest(hashtags) %&gt;% 
+  count(hashtags = tolower(hashtags)) %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  mutate(hashtags = fct_reorder(hashtags,-n, .desc = TRUE)) %&gt;% 
+  drop_na() %&gt;% 
+  slice(1:20) %&gt;% 
+  ggplot() + geom_bar(aes(hashtags,n), stat = "identity", fill = "#000080") +
+  coord_flip() +
+  ggplot2::theme_minimal()+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.y = element_text(face = c('bold'),
+                                   size = 14,
+                                   color = "#000080")) +
+  labs(title = "Top 20 Hashtags about Patriot Act's Indian Election Episode",
+       subtitle = "Comdey Show by Hasan Mihnaj &amp; Netflix",
+       caption = "Data Source: Tweets mentioning `@hasanminhaj india`",
+       y = "Count of Tweets",
+       x = "Hashtags") -&gt; top20_plot
+```
+
+---
+
+## The Graphics - That doesn't look interesting
+
+```r
+top20_plot
+```
+
+![](presentation_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+## Themed Graphics 
+
+```r
+# based on this SO answer: https://stackoverflow.com/a/39632532
+# Indian Tricolor Gradient Background
+# Src: https://www.schemecolor.com/indian-flag-colors.php
+
+indflag &lt;- c("#FF9933", "#FFFFFF", "#138808")
+g &lt;- rasterGrob(indflag, width = unit(1, "npc"), height = unit(1, "npc"), interpolate = TRUE)
+grid.newpage()
+grid.draw(g)
+print(top20_plot, newpage = FALSE)
+```
+
+---
+
+## Themed Graphics 
+
+&lt;figure&gt;
+
+&lt;img src='top20_hashtags_new.png' width="100%" /&gt;
+
+&lt;/figure&gt;
+
+
+---
+class: inverse, center, middle
+ 
+# Topic Extraction
+
+---
+
+# Bit of cleaning
+
+
+```r
+# Cleaning
+
+#based on: https://stackoverflow.com/questions/51947268/remove-hashtags-from-beginning-and-end-of-tweets-in-r
+
+hasanIN$text_nohashtag &lt;- stringi::stri_replace_all_regex(hasanIN$text,"(?:\\s*#\\w+)+\\s*","")
+```
+---
+
+# NLP in Action
+
+### Language Model
+
+```r
+#model &lt;- udpipe_download_model(language = "english")
+udmodel_english &lt;- udpipe_load_model(file = 'english-ewt-ud-2.3-181115.udpipe')
+```
+### Annotation &amp; Transformation
+
+
+```r
+s &lt;- udpipe_annotate(udmodel_english, hasanIN$text_nohashtag)
+
+x &lt;- data.frame(s)
+```
+
+---
+### Topic (Keyword) Extraction
+
+
+```r
+## Using RAKE
+stats &lt;- keywords_rake(x = x, term = "lemma", group = "doc_id", 
+                       relevant = x$upos %in% c("NOUN", "ADJ"))
+```
+ 
+---
+### Themed Graphics
+
+
+```r
+stats %&gt;% 
+  filter(freq &gt;= 5) %&gt;% 
+  arrange(desc(rake)) %&gt;% 
+  slice(1:30) %&gt;% 
+  mutate(keyword = fct_reorder(keyword,rake)) %&gt;% 
+  ggplot() + geom_bar(aes(keyword,rake), stat = "identity", fill = "red") +
+  scale_y_log10() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Top 30 Topics about Patriot Act's Indian Election Tweets",
+       subtitle = "Comdey Show by Hasan Mihnaj &amp; Netflix",
+       caption = "Data Source: Tweets mentioning `@hasanminhaj india`",
+       y = "Log of RAKE Score (higher - better)",
+       x = "Hashtags") -&gt; topics
+
+ggdraw() +
+  draw_image("https://st1.latestly.com/wp-content/uploads/2019/03/03-8-784x441.jpg",
+             x = 0.25, y = -0.25,
+             scale = 0.4) +
+  draw_plot(topics)
+```
+
+---
+
+## Themed Graphics 
+
+&lt;figure&gt;
+
+&lt;img src='top30_topics.png' width="80%" /&gt;
+
+&lt;/figure&gt;
+
+---
+
+## You can do much more!
+
+&lt;figure&gt;
+
+&lt;img src='textplot_new.png' width="80%" /&gt;
+
+&lt;/figure&gt;
+---
+
+class: inverse, center, middle
+
+# THE END 
+
+---
+class: center, middle
+
+# Thanks!
+
+Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
+
+The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
+    </textarea>
+<script src="libs/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
