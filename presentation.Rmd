@@ -1,6 +1,6 @@
 ---
 title: "Introduction to Tweets Analysis"
-subtitle: "Guide with Example"
+subtitle: "Analysis of Netflix's Patriot Act-related Tweets"
 author: "AbdulMajedRaja RS"
 date: "20th April 2019"
 output:
@@ -376,8 +376,32 @@ Slides created via the R package [**xaringan**](https://github.com/yihui/xaringa
 
 The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
 
+
 ---
 
+# Bibliography
+
+```{r}
+citation('xaringan')
+```
+
+
+---
+
+# Bibliography
+
+```{r}
+citation('udpipe')
+```
+
+---
+
+# Bibliography
+
+```{r}
+citation('tidyverse')
+```
+---
 class: inverse, center, middle
 
 # THE END 

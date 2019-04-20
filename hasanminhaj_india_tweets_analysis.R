@@ -10,6 +10,7 @@ library(grid)
 library(ggthemes)
 
 
+
 hasanIN <- read_twitter_csv("hasanminhaj_india_noRT.csv", unflatten = TRUE) 
 
 #A glimpse of the data
@@ -136,7 +137,7 @@ ggdraw() +
 
 
 ## Word cloud - required????
-
+library(wordcloud)
 stats %>% 
   filter(freq >= 5) %>% 
   arrange(desc(rake)) %>% 
