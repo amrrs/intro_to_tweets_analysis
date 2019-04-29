@@ -4,7 +4,7 @@
 ### Objective
 
 + Learn how to get started with Twitter (Tweets) Analysis using R 
-+ Use-cse: Analysis the tweets made about the Episode: Indian Election of Patriot Act (A Neflix Show by US Comedian Hasan Minhaj)
++ Use-cse: Analysing the tweets made about the Netflix show Patriot Act's Episode: [Indian Elections (A Show by US Comedian Hasan Minhaj)](https://www.youtube.com/watch?v=qqZ_SH9N3Xo)
 
 ### Sample Output
 
