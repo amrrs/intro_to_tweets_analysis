@@ -11,6 +11,7 @@ library(ggthemes)
 
 
 
+
 hasanIN <- read_twitter_csv("hasanminhaj_india_noRT.csv", unflatten = TRUE) 
 
 #A glimpse of the data
@@ -148,3 +149,19 @@ stats %>%
 ## Text Plot
   
 wordcloud::textplot(log1p(stats_df$rake),log1p(stats_df$freq),stats_df$keyword,cex = 0.7)
+
+### Topic Mapping - untested
+
+
+stats %>% 
+  mutate(keyword = as.character(keyword))
+
+stats_df %>% 
+  mutate(keyword = as.character(keyword)) %>% 
+  tidytext::unnest_tokens(word,keyword) %>% 
+  left_join(x, by = c('word' = 'lemma')) %>% 
+  mutate(doc_id = parse_number(doc_id)) -> topic_word_with_docid_df
+
+hasanIN %>% 
+  mutate(doc_id = row_number()) %>% 
+  left_join(topic_word_with_docid_df, by = "doc_id") -> mapped_df
